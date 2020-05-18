@@ -5,15 +5,58 @@ import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
         System.out.println("Enter cells: ");
 
-        String fieldInput = scanner.nextLine();
-        fieldInput = fieldInput.replaceAll("_", "E");
+        String fieldInput = InputReceiver.getFieldLayout();
         Game myGame = new Game(fieldInput);
-        myGame.printBoard();
-        myGame.printGameState();
 
+        myGame.printBoard();
+
+        while (true) { // This functionality should be moved!
+            String xy = InputReceiver.askForCoordinates();
+            if (!InputReceiver.validateCoordinates(xy)) {
+                continue;
+            }
+            int position = InputReceiver.coordinatesToPosition(xy);
+            if (myGame.getGameBoard().cellIsEmpty(position)) {
+                myGame.getGameBoard().getCell(position).changeState(State.X);
+                break;
+            } else {
+                System.out.println("This cell is occupied! Choose another one!");
+            }
+        }
+        myGame.printBoard();
+
+    }
+
+}
+
+class InputReceiver {
+    static Scanner scanner = new Scanner(System.in);
+
+    public static String getFieldLayout() {
+        return scanner.nextLine().replaceAll("_", "E");
+    }
+
+    public static boolean validateCoordinates(String input) {
+        if (input.matches("[123] [123]")) {
+            return true;
+        } else if (input.matches("[0-9] [0-9]")) {
+            System.out.println("Coordinates should be from 1 to 3!");
+        } else {
+            System.out.println("You should enter numbers!");
+        }
+        return false;
+    }
+
+    public static String askForCoordinates() {
+        System.out.println("Enter the coordinates: ");
+        return scanner.nextLine();
+    }
+
+    public static int coordinatesToPosition(String coordinates) {
+        String[] xy = coordinates.split(" ");
+        return (Integer.parseInt(xy[0]) - 1) + (3 - Integer.parseInt(xy[1])) * 3;
     }
 
 }
@@ -84,6 +127,10 @@ class Game {
         }
     }
 
+    public GameBoard getGameBoard() {
+        return this.gameBoard;
+    }
+
 }
 
 
@@ -144,7 +191,12 @@ class GameBoard {
         System.out.println("---------");
     }
 
-
+    public boolean cellIsEmpty (int cellNumber) {
+        if (cells.get(cellNumber).getState() == State.E) {
+            return true;
+        }
+            return false;
+    }
     public boolean rowCheck(State state, int rowNumber) {
         if (cells.get(rowNumber).getState() == state &&
                 cells.get(rowNumber + 1).getState() == state &&
@@ -215,6 +267,10 @@ class GameBoard {
             }
         }
         return false;
+    }
+
+    public Cell getCell(int position) {
+        return cells.get(position);
     }
 
 }
